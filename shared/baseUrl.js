@@ -1,0 +1,1 @@
+export const baseUrl = 'https://hotel-booking-host.onrender.com/';
