@@ -57,13 +57,21 @@ export const fetchComments = () => (dispatch) => {
         .then((comments) => dispatch(addComments(comments)))
         .catch((error) => dispatch(commentsFailed(error.message)));
 };
-const commentsFailed = (errmess) => ({
-    type: ActionTypes.COMMENTS_FAILED,
-    payload: errmess
-});
 const addComments = (comments) => ({
     type: ActionTypes.ADD_COMMENTS,
     payload: comments
+});
+export const postComment = (hotelId, rating, author, comment) => (dispatch) => {
+    var newcmt = { hotelId: hotelId, rating: rating, author: author, comment: comment, date: new Date().toISOString() };
+    dispatch(addComment(newcmt));
+};
+const addComment = (newcmt) => ({
+    type: ActionTypes.ADD_COMMENT,
+    payload: newcmt
+});
+const commentsFailed = (errmess) => ({
+    type: ActionTypes.COMMENTS_FAILED,
+    payload: errmess
 });
 
 // promotions
