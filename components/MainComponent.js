@@ -92,10 +92,10 @@ function CustomDrawerContent(props) {
         <DrawerContentScrollView {...props}>
             <View style={{ backgroundColor: '#7cc', height: 80, alignItems: 'center', flexDirection: 'row' }}>
                 <View style={{ flex: 1 }}>
-                    <Image source={{ uri: baseUrl + 'images/logo.png' }} style={{ margin: 10, width: 80, height: 60 }} />
+                    <Image source={{ uri: baseUrl + 'images/user.png' }} style={{ margin: 10, width: 80, height: 60 }} />
                 </View>
                 <View style={{ flex: 2 }}>
-                    <Text style={{ color: '#fff', fontSize: 22, fontWeight: 'bold' }}>TDK & Friends</Text>
+                    <Text style={{ color: '#fff', fontSize: 22, fontWeight: 'bold', marginLeft: 20 }}>User</Text>
                 </View>
             </View>
             <DrawerItemList {...props} />
@@ -121,6 +121,7 @@ function MainNavigatorScreen() {
 // redux
 import { connect } from 'react-redux';
 import { fetchLeaders, fetchHotels, fetchComments, fetchPromos } from '../redux/ActionCreators';
+import autoMergeLevel1 from 'redux-persist/es/stateReconciler/autoMergeLevel1';
 const mapDispatchToProps = (dispatch) => ({
     fetchLeaders: () => dispatch(fetchLeaders()),
     fetchHotels: () => dispatch(fetchHotels()),
