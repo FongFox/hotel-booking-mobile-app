@@ -117,3 +117,28 @@ export const deleteFavorite = (hotelID) => ({
     type: ActionTypes.DELETE_FAVORITE,
     payload: hotelID
 });
+// presentations
+export const fetchPresentations = () => (dispatch) => {
+    dispatch(presentationsLoading());
+    return fetch(baseUrl + 'presentations')
+        .then((response) => {
+            if (!response.ok) throw Error('Error ' + response.status + ': ' + response.statusText);
+            else return response.json();
+        })
+        .then((presentations) => dispatch(addPresentations(presentations)))
+        .catch((error) => dispatch(presentationsFailed(error.message)));
+};
+
+const presentationsLoading = () => ({
+    type: ActionTypes.PRESENTATIONS_LOADING
+});
+
+const presentationsFailed = (errmess) => ({
+    type: ActionTypes.PRESENTATIONS_FAILED,
+    payload: errmess
+});
+
+const addPresentations = (presentations) => ({
+    type: ActionTypes.ADD_PRESENTATIONS,
+    payload: presentations
+});
