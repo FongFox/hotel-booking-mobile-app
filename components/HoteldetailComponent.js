@@ -147,7 +147,6 @@ class BookingContent extends Component {
         super(props);
         this.state = {
             guests: 1,
-            // smoking: false,
             date: new Date(),
             showDatePicker: false,
             requirement: false,
@@ -192,7 +191,7 @@ class BookingContent extends Component {
 
         await Calendar.createEventAsync(defaultCalendarId, {
             title: 'Hotel Booking Notice',
-            location: '123, Lorem ipsum',
+            location: this.props.hotel.name + '\n' + this.props.hotel.address,
             startDate: new Date(Date.parse(date)),
             endDate: new Date(Date.parse(date) + 2 * 60 * 60 * 1000),
             timeZone: 'Asia/Hong_Kong',
@@ -247,7 +246,6 @@ class BookingContent extends Component {
     resetForm() {
         this.setState({
             guests: 1,
-            // smoking: false,
             date: new Date(),
             showDatePicker: false,
             requirement: false,
@@ -272,14 +270,6 @@ class BookingContent extends Component {
                         ))}
                     </Picker>
                 </View>
-                {/* <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>Smoking/No-Smoking?</Text>
-                    <Switch
-                        style={styles.formItem}
-                        value={this.state.smoking}
-                        onValueChange={(value) => this.setState({ smoking: value })}
-                    />
-                </View> */}
                 <View style={styles.formRow}>
                     <Text style={styles.formLabel}>Date and Time</Text>
                     <View style={styles.dateContainer}>
@@ -323,6 +313,7 @@ class BookingContent extends Component {
     }
 }
 
+
 class Hoteldetail extends Component {
     constructor(props) {
         super(props);
@@ -356,7 +347,8 @@ class Hoteldetail extends Component {
                 <Modal animationType={'slide'} visible={this.state.showBookingModal}
                     onRequestClose={() => this.setState({ showBookingModal: false })}>
                     <BookingContent hotelId={hotelId}
-                        onPressCancel={() => this.setState({ showBookingModal: false })} />
+                        onPressCancel={() => this.setState({ showBookingModal: false })}
+                        hotel={hotel} />
                 </Modal>
             </ScrollView>
         );
@@ -366,6 +358,7 @@ class Hoteldetail extends Component {
         this.props.postFavorite(hotelId);
     }
 }
+
 
 export default connect(mapStateToProps, mapDispatchToProps)(Hoteldetail);
 
