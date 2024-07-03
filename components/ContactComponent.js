@@ -11,12 +11,12 @@ class Contact extends Component {
                 <Card>
                     <Card.Title>Contact Information</Card.Title>
                     <Card.Divider />
-                    <Text style={{ margin: 10 }}>121, Clear Water Bay Road</Text>
-                    <Text style={{ margin: 10 }}>Clear Water Bay, Kowloon</Text>
-                    <Text style={{ margin: 10 }}>HONG KONG</Text>
-                    <Text style={{ margin: 10 }}>Tel: +852 1234 5678</Text>
-                    <Text style={{ margin: 10 }}>Fax: +852 8765 4321</Text>
-                    <Text style={{ margin: 10 }}>Email: support@hotelbookingapp.com</Text>
+                    <Text style={{ margin: 10 }}>5 Nguyen Van Trang</Text>
+                    <Text style={{ margin: 10 }}>Hoa Sen University</Text>
+                    <Text style={{ margin: 10 }}>Vietnam</Text>
+                    <Text style={{ margin: 10 }}>Tel: 028 7300 7272</Text>
+                    <Text style={{ margin: 10 }}>Fax: 028 7309 1991</Text>
+                    <Text style={{ margin: 10 }}>Email: ITSupport@hoasen.edu.vn</Text>
                     <Button title=' Compose Email' buttonStyle={{ backgroundColor: '#7cc' }}
                         icon={<Icon name='envelope-o' type='font-awesome' color='white' />}
                         onPress={this.composeMail} />
