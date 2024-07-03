@@ -9,6 +9,7 @@ import { hotels } from './hotels';
 import { comments } from './comments';
 import { promotions } from './promotions';
 import { favorites } from './favorites';
+import { presentations } from './presentations';
 // redux-persist
 import { persistStore, persistCombineReducers } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,7 +18,7 @@ const config = { key: 'root', storage: AsyncStorage, debug: true };
 export const ConfigureStore = () => {
     const store = createStore(
         persistCombineReducers(config, {
-            leaders, hotels, comments, promotions, favorites
+            presentations, leaders, hotels, comments, promotions, favorites
         }),
         applyMiddleware(thunk, logger)
     );
