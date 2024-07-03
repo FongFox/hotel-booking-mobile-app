@@ -113,3 +113,7 @@ const addFavorite = (hotelId) => ({
     type: ActionTypes.ADD_FAVORITE,
     payload: hotelId
 });
+export const deleteFavorite = (hotelID) => ({
+    type: ActionTypes.DELETE_FAVORITE,
+    payload: hotelID
+});
