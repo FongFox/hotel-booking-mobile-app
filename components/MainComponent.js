@@ -22,7 +22,7 @@ function HomeNavigatorScreen() {
         <HomeNavigator.Navigator
             initialRouteName='Home'
             screenOptions={{
-                headerStyle: { backgroundColor: '#3d9034' },
+                headerStyle: { backgroundColor: '#000' },
                 headerTintColor: '#fff',
                 headerTitleStyle: { color: '#fff' }
             }}>
@@ -30,6 +30,8 @@ function HomeNavigatorScreen() {
                 headerTitle: 'Home',
                 headerLeft: () => (<Icon name='menu' size={36} color='#fff' onPress={() => navigation.toggleDrawer()} style={{ marginLeft: 20 }} />)
             })} />
+            <HomeNavigator.Screen name='ListScreen' component={List}
+                options={{ headerTitle: 'List' }} />
         </HomeNavigator.Navigator>
     );
 }
@@ -85,7 +87,7 @@ function BookmarkNavigatorScreen() {
                     headerLeft: () => (<Icon name='menu' size={36} color='#fff' onPress={() => navigation.toggleDrawer()} style={{ marginLeft: 20 }} />)
                 })} />
             <BookmarkNavigator.Screen name='Hoteldetail' component={Hoteldetail}
-                options={{ headerTitle: 'Dish Detail' }} />
+                options={{ headerTitle: 'Hotel Detail' }} />
         </BookmarkNavigator.Navigator>
     );
 }
