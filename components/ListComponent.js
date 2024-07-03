@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 const mapStateToProps = (state) => {
     return {
         hotels: state.hotels,
-        comments: state.comments // Assuming comments are stored in state.comments
+        comments: state.comments
     }
 };
 
@@ -36,7 +36,7 @@ class List extends Component {
                     />
                     <Text style={styles.reviewsHeader}>Recent Reviews</Text>
                     <FlatList
-                        data={this.props.comments.comments} // Assuming comments are stored in comments.comments
+                        data={this.props.comments.comments}
                         renderItem={({ item, index }) => this.renderCommentItem(item, index)}
                         keyExtractor={(item) => item.id.toString()}
                         contentContainerStyle={styles.commentsContainer}
@@ -132,7 +132,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 3,
-        width: 250,
+        width: 'auto',
+        alignSelf: 'flex-start'
     },
     listItemTitle: {
         fontSize: 18,
