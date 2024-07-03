@@ -1,112 +1,119 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Card, Image } from 'react-native-elements';
-import Loading from './LoadingComponent';
-import { baseUrl } from '../shared/baseUrl';
+import { View, StyleSheet, ImageBackground, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { connect } from 'react-redux';
-
-const RenderItem = (props) => {
-    const { isLoading, errMess, item } = props;
-
-    if (isLoading) {
-        return (<Loading />);
-    } else if (errMess) {
-        return (<Text>{errMess}</Text>);
-    } else if (item != null) {
-        return (
-            <Card containerStyle={styles.cardContainer}>
-                <Image
-                    source={{ uri: baseUrl + item.image }}
-                    style={styles.image}
-                    resizeMode="cover"
-                >
-                    <View style={styles.textContainer}>
-                        <Text style={styles.featuredTitle}>{item.name}</Text>
-                        {item.designation && <Text style={styles.featuredSubtitle}>{item.designation}</Text>}
-                    </View>
-                </Image>
-                <Text style={styles.description}>{item.description}</Text>
-            </Card>
-        );
-    } else {
-        return (<View />);
-    }
-};
-
-const mapStateToProps = (state) => {
-    return {
-        hotels: state.hotels,
-        promotions: state.promotions,
-        leaders: state.leaders
-    }
-};
+import { fetchPresentations } from '../redux/ActionCreators';
+import { baseUrl } from '../shared/baseUrl';
 
 class Home extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            opacity: new Animated.Value(1),
+        };
+    }
+
+    componentDidMount() {
+        this.props.fetchPresentations();
+        this.props.navigation.addListener('focus', this.handleScreenFocus);
+    }
+
+    componentWillUnmount() {
+        this.props.navigation.removeListener('focus', this.handleScreenFocus);
+    }
+
+    handleScreenFocus = () => {
+        Animated.timing(this.state.opacity, {
+            toValue: 1,
+            duration: 500, // Adjust duration as needed
+            easing: Easing.linear,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    handleStartBrowsing = () => {
+        Animated.timing(this.state.opacity, {
+            toValue: 0,
+            duration: 500, // Adjust duration as needed
+            easing: Easing.linear,
+            useNativeDriver: true,
+        }).start(() => {
+            this.props.navigation.navigate('List');
+        });
+    }
+
     render() {
-        const { hotels, promotions, leaders } = this.props;
-        const hotel = hotels.hotels.filter((hotel) => hotel.featured === true)[0];
-        const promo = promotions.promotions.filter((promo) => promo.featured === true)[0];
-        const leader = leaders.leaders.filter((leader) => leader.featured === true)[0];
+        const { presentations } = this.props;
+        const { opacity } = this.state;
+        const backgroundImage = presentations.presentations.filter((presentation) => presentation.featured === true)[0]?.image;
 
         return (
-            <ScrollView style={styles.container}>
-                <RenderItem item={hotel}
-                    isLoading={hotels.isLoading}
-                    errMess={hotels.errMess} />
-                <RenderItem item={promo}
-                    isLoading={promotions.isLoading}
-                    errMess={promotions.errMess} />
-                <RenderItem item={leader}
-                    isLoading={leaders.isLoading}
-                    errMess={leaders.errMess} />
-            </ScrollView>
+            <Animated.View style={[styles.container, { opacity }]}>
+                {backgroundImage && (
+                    <ImageBackground
+                        source={{ uri: baseUrl + backgroundImage }}
+                        style={styles.backgroundImage}
+                    >
+                        <View style={styles.textContainer}>
+                            <Text style={styles.text}>DISCOVER,</Text>
+                            <Text style={styles.text}>RELAX,</Text>
+                            <Text style={styles.text}>REPEAT.</Text>
+                            <TouchableOpacity onPress={this.handleStartBrowsing} style={styles.button}>
+                                <Text style={styles.buttonText}>Start Browsing</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ImageBackground>
+                )}
+            </Animated.View>
         );
     }
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#E8F1F2',
-        padding: 10,
+        flex: 1,
     },
-    cardContainer: {
-        borderRadius: 10,
-        borderWidth: 0,
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        marginBottom: 20,
-    },
-    image: {
+    backgroundImage: {
+        flex: 1,
         width: '100%',
-        height: 200,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     textContainer: {
         position: 'absolute',
-        bottom: 10,
-        left: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        padding: 5,
-        borderRadius: 5,
+        top: 20,
+        width: '100%',
+        alignItems: 'flex-start',
     },
-    featuredTitle: {
-        color: '#fff',
+    text: {
+        fontSize: 60,
+        fontWeight: '900',
+        color: 'white',
+        padding: 0,
+        marginBottom: 20,
+        marginLeft: 20,
+    },
+    button: {
+        backgroundColor: 'black',
+        paddingVertical: 7,
+        paddingHorizontal: 15,
+        borderRadius: 10,
+        marginLeft: 40,
+    },
+    buttonText: {
         fontSize: 18,
-        fontWeight: 'bold',
-    },
-    featuredSubtitle: {
-        color: '#fff',
-        fontSize: 14,
-    },
-    description: {
-        margin: 10,
-        fontSize: 16,
-        color: '#333',
+        color: 'white',
     },
 });
 
-export default connect(mapStateToProps)(Home);
+const mapStateToProps = (state) => {
+    return {
+        presentations: state.presentations,
+    };
+};
+
+const mapDispatchToProps = {
+    fetchPresentations,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
