@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text, FlatList, Modal, Button, StyleSheet, Switch, Alert, PanResponder } from 'react-native';
+import { View, Text, FlatList, Modal, Button, StyleSheet, Switch, Alert, PanResponder, Platform } from 'react-native';
 import { Card, Image, Icon, Rating, Input } from 'react-native-elements';
 import { ScrollView } from 'react-native-virtualized-view';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
 import * as Notifications from 'expo-notifications';
+import * as Calendar from 'expo-calendar';
 
 
 import { baseUrl } from '../shared/baseUrl';
@@ -152,28 +153,73 @@ class BookingContent extends Component {
             requirement: false,
             showForm: false, // track form appear
             additionalRequirements: '', // form data
+            calendarId: null // Added ID
         };
     }
+
+    async obtainCalendarPermission() {
+        const { status } = await Calendar.requestCalendarPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Sorry, we need calendar permissions to make this work!');
+            return false;
+        }
+        return true;
+    }
+    async getDefaultCalendarSource() {
+        const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+        const defaultCalendar = calendars.find(cal => cal.source.name === 'Default') || calendars[0];
+        return defaultCalendar.source;
+    }
+
+    async addReservationToCalendar(date) {
+        const permission = await this.obtainCalendarPermission();
+        if (!permission) return;
+
+        const defaultCalendarSource = Platform.OS === 'ios'
+            ? await this.getDefaultCalendarSource()
+            : { isLocalAccount: true, name: 'Expo Calendar' };
+
+        const defaultCalendarId = await Calendar.createCalendarAsync({
+            title: 'Expo Calendar',
+            color: 'blue',
+            entityType: Calendar.EntityTypes.EVENT,
+            sourceId: defaultCalendarSource.id,
+            source: defaultCalendarSource,
+            name: 'internalCalendarName',
+            ownerAccount: 'personal',
+            accessLevel: Calendar.CalendarAccessLevel.OWNER,
+        });
+
+        await Calendar.createEventAsync(defaultCalendarId, {
+            title: 'Hotel Booking Notice',
+            location: '123, Lorem ipsum',
+            startDate: new Date(Date.parse(date)),
+            endDate: new Date(Date.parse(date) + 2 * 60 * 60 * 1000),
+            timeZone: 'Asia/Hong_Kong',
+        });
+
+        alert('Reservation added to your calendar!');
+    }
+
 
     handleBooking() {
         Alert.alert(
             'Is this your booking?',
             'Number of Guest(s)/Room: ' + this.state.guests + '\n' +
-            'Date and Time: ' + this.state.date.toString() + '\n' +
+            'Date and Time: ' + this.state.date.toISOString() + '\n' +
             'Additional requirements: ' + this.state.requirement + '\n' +
             this.state.additionalRequirements,
             [
                 {
                     text: 'Cancel',
-                    onPress: () => {
-                        this.props.onPressCancel();
-                    },
+                    onPress: () => this.resetForm(),
                     style: 'cancel'
                 },
                 {
                     text: 'OK',
                     onPress: () => {
                         this.props.onPressCancel();
+                        this.addReservationToCalendar(this.state.date);
                         this.presentLocalNotification(this.state.date);
                     },
                 }
@@ -197,6 +243,17 @@ class BookingContent extends Component {
                 trigger: null
             });
         }
+    }
+    resetForm() {
+        this.setState({
+            guests: 1,
+            // smoking: false,
+            date: new Date(),
+            showDatePicker: false,
+            requirement: false,
+            showForm: false, // track form appear
+            additionalRequirements: '', // form data
+        });
     }
 
     render() {
