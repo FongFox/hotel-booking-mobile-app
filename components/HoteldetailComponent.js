@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text, FlatList, Modal, Button, StyleSheet, Switch, Alert } from 'react-native';
+import { View, Text, FlatList, Modal, Button, StyleSheet, Switch, Alert, PanResponder } from 'react-native';
 import { Card, Image, Icon, Rating, Input } from 'react-native-elements';
 import { ScrollView } from 'react-native-virtualized-view';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
+import * as Notifications from 'expo-notifications';
+
 
 import { baseUrl } from '../shared/baseUrl';
 
@@ -26,30 +28,53 @@ const mapDispatchToProps = (dispatch) => ({
 
 class RenderHotel extends Component {
     render() {
+        // gesture
+        const recognizeDrag = ({ moveX, moveY, dx, dy }) => {
+            if (dx < -200) return 1; // right to left
+            return 0;
+        };
+        const panResponder = PanResponder.create({
+            onStartShouldSetPanResponder: (e, gestureState) => { return true; },
+            onPanResponderEnd: (e, gestureState) => {
+                if (recognizeDrag(gestureState) === 1) {
+                    Alert.alert(
+                        'Bookmark',
+                        'Are you sure you wish to add ' + hotel.name + ' to your bookmark saves?',
+                        [
+                            { text: 'Cancel', onPress: () => { /* nothing */ } },
+                            { text: 'OK', onPress: () => { this.props.favorite ? alert('Already saved') : this.props.onPressFavorite() } },
+                        ]
+                    );
+                }
+                return true;
+            }
+        });
         const hotel = this.props.hotel;
         if (hotel != null) {
             return (
-                <View>
-                    <Card containerStyle={styles.card}>
-                        <Text style={styles.title}>{hotel.name}</Text>
-                    </Card>
-                    <Card containerStyle={styles.card}>
-                        <Image source={{ uri: baseUrl + hotel.image }}
-                            style={styles.image}>
-                        </Image>
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 25 }}>
-                            <Icon raised reverse name={this.props.favorite ? 'heart' : 'heart-o'} type='font-awesome' color='#f50'
-                                onPress={() => this.props.favorite ? alert('Already favorite') : this.props.onPressFavorite()} />
-                            <Icon raised reverse name='comment' type='font-awesome' color='#f50'
-                                onPress={() => this.props.onPressComment()} />
-                            <Icon raised reverse name='pencil' type='font-awesome' color='#f50'
-                                onPress={() => this.props.onPressBooking()} />
-                        </View>
-                    </Card>
-                    <Card containerStyle={styles.card}>
-                        <Text style={styles.description}>{'\u2022 ' + hotel.description}</Text>
-                    </Card>
-                </View>
+                <Card {...panResponder.panHandlers}>
+                    <View>
+                        <Card containerStyle={styles.card}>
+                            <Text style={styles.title}>{hotel.name}</Text>
+                        </Card>
+                        <Card containerStyle={styles.card}>
+                            <Image source={{ uri: baseUrl + hotel.image }}
+                                style={styles.image}>
+                            </Image>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 25 }}>
+                                <Icon raised reverse name={this.props.favorite ? 'heart' : 'heart-o'} type='font-awesome' color='#f50'
+                                    onPress={() => this.props.favorite ? alert('Already favorite') : this.props.onPressFavorite()} />
+                                <Icon raised reverse name='comment' type='font-awesome' color='#f50'
+                                    onPress={() => this.props.onPressComment()} />
+                                <Icon raised reverse name='pencil' type='font-awesome' color='#f50'
+                                    onPress={() => this.props.onPressBooking()} />
+                            </View>
+                        </Card>
+                        <Card containerStyle={styles.card}>
+                            <Text style={styles.description}>{'\u2022 ' + hotel.description}</Text>
+                        </Card>
+                    </View>
+                </Card>
             );
         }
         return (<View />);
@@ -101,7 +126,7 @@ class ModalContent extends Component {
                 <Input value={this.state.comment} placeholder='Comment' leftIcon={{ name: 'comment-o', type: 'font-awesome' }}
                     onChangeText={(text) => this.setState({ comment: text })} />
                 <View style={styles.buttonRow}>
-                    <Button title='SUBMIT' color='#7cc'
+                    <Button title='SUBMIT' color='#3d9034'
                         onPress={() => this.handleSubmit()} />
                     <Button title='CANCEL' color='red'
                         onPress={() => this.props.onPressCancel()} />
@@ -121,31 +146,65 @@ class BookingContent extends Component {
         super(props);
         this.state = {
             guests: 1,
-            smoking: false,
+            // smoking: false,
             date: new Date(),
-            showDatePicker: false
+            showDatePicker: false,
+            requirement: false,
+            showForm: false, // track form appear
+            additionalRequirements: '', // form data
         };
     }
 
     handleBooking() {
         Alert.alert(
-            'Booking Details', JSON.stringify(this.state),
-            [{
-                text: 'OK',
-                onPress: () => {
-                    this.props.onPressCancel();
+            'Is this your booking?',
+            'Number of Guest(s)/Room: ' + this.state.guests + '\n' +
+            'Date and Time: ' + this.state.date.toString() + '\n' +
+            'Additional requirements: ' + this.state.requirement + '\n' +
+            this.state.additionalRequirements,
+            [
+                {
+                    text: 'Cancel',
+                    onPress: () => {
+                        this.props.onPressCancel();
+                    },
+                    style: 'cancel'
+                },
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        this.props.onPressCancel();
+                        this.presentLocalNotification(this.state.date);
+                    },
                 }
-            }],
+            ],
             { cancelable: false }
         );
+    }
+    async presentLocalNotification(date) {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status === 'granted') {
+            Notifications.setNotificationHandler({
+                handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: true })
+            });
+            Notifications.scheduleNotificationAsync({
+                content: {
+                    title: 'Your Booking',
+                    body: 'Booking for ' + date + ' requested',
+                    sound: true,
+                    vibrate: true
+                },
+                trigger: null
+            });
+        }
     }
 
     render() {
         return (
-            <ScrollView style={styles.bookingContainer}>
+            <View style={styles.bookingContainer}>
                 <Text style={styles.modalTitle}>Booking</Text>
                 <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>Number of Guests</Text>
+                    <Text style={styles.formLabel}>Number of Guests/Room</Text>
                     <Picker
                         style={styles.formItem}
                         selectedValue={this.state.guests}
@@ -156,14 +215,14 @@ class BookingContent extends Component {
                         ))}
                     </Picker>
                 </View>
-                <View style={styles.formRow}>
+                {/* <View style={styles.formRow}>
                     <Text style={styles.formLabel}>Smoking/No-Smoking?</Text>
                     <Switch
                         style={styles.formItem}
                         value={this.state.smoking}
                         onValueChange={(value) => this.setState({ smoking: value })}
                     />
-                </View>
+                </View> */}
                 <View style={styles.formRow}>
                     <Text style={styles.formLabel}>Date and Time</Text>
                     <View style={styles.dateContainer}>
@@ -177,13 +236,32 @@ class BookingContent extends Component {
                         />
                     </View>
                 </View>
+                <View style={styles.formRow}>
+                    <Text style={styles.formLabel}>Additional requirement(s):</Text>
+                    <Switch
+                        style={styles.formItem}
+                        value={this.state.requirement}
+                        onValueChange={(value) => this.setState({ requirement: value, showForm: value })}
+                    />
+                </View>
+                {this.state.showForm && (
+                    <View style={styles.formRow}>
+                        <Text style={styles.formLabel}>Enter Additional Requirement(s):</Text>
+                        <Input
+                            placeholder='Enter requirements'
+                            value={this.state.additionalRequirements}
+                            onChangeText={(text) => this.setState({ additionalRequirements: text })}
+                            style={styles.formItem}
+                        />
+                    </View>
+                )}
                 <View style={styles.buttonRow}>
-                    <Button title='Reserve' color='#7cc'
+                    <Button title='RESERVE' color='#3d9034'
                         onPress={() => this.handleBooking()} />
                     <Button title='CANCEL' color='red'
                         onPress={() => this.props.onPressCancel()} />
                 </View>
-            </ScrollView>
+            </View>
         );
     }
 }
@@ -288,8 +366,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginVertical: 10,
-        color: '#7cc',
+        marginTop: 40,
+        color: '#3d9034',
     },
     buttonRow: {
         flexDirection: 'row',
