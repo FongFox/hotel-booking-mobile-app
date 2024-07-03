@@ -21,6 +21,10 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 class Bookmark extends Component {
+    constructor(props) {
+        super(props);
+    }
+
     render() {
         if (this.props.hotels.isLoading) {
             return (<Loading />);
@@ -29,29 +33,31 @@ class Bookmark extends Component {
         } else {
             const hotels = this.props.hotels.hotels.filter((hotel) => this.props.favorites.some((el) => el === hotel.id));
             return (
-                // <FlatList data={hotels}
-                //     renderItem={({ item, index }) => this.renderMenuItem(item, index)}
-                //     keyExtractor={(item) => item.id.toString()} />
-                <SwipeListView data={hotels}
+                <SwipeListView
+                    data={hotels}
                     renderItem={({ item, index }) => this.renderMenuItem(item, index)}
                     renderHiddenItem={({ item, index }) => this.renderHiddenItem(item, index)}
                     keyExtractor={(item) => item.id.toString()}
-                    rightOpenValue={-100} />
+                    rightOpenValue={-100}
+                />
             );
         }
     }
+
     renderMenuItem(item, index) {
         const { navigate } = this.props.navigation;
         return (
-            <ListItem key={index} onPress={() => navigate('Hoteldetail', { hotelID: item.id })}>
+            <ListItem key={index} bottomDivider onPress={() => navigate('Hoteldetail', { hotelId: item.id })}>
                 <Avatar source={{ uri: baseUrl + item.image }} />
                 <ListItem.Content>
                     <ListItem.Title>{item.name}</ListItem.Title>
                     <ListItem.Subtitle>{item.description}</ListItem.Subtitle>
                 </ListItem.Content>
             </ListItem>
+
         );
     }
+
     renderHiddenItem(item, index) {
         return (
             <View style={{ alignItems: 'center', backgroundColor: '#DDD', flex: 1, flexDirection: 'row', justifyContent: 'space-between', paddingLeft: 15 }}>
@@ -72,4 +78,5 @@ class Bookmark extends Component {
         );
     }
 }
+
 export default connect(mapStateToProps, mapDispatchToProps)(Bookmark);
