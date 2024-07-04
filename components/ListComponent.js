@@ -5,6 +5,8 @@ import { baseUrl } from '../shared/baseUrl';
 import Loading from './LoadingComponent';
 import { connect } from 'react-redux';
 
+const localImage = require('./images/user.png');
+
 const mapStateToProps = (state) => {
     return {
         hotels: state.hotels,
@@ -73,7 +75,7 @@ class List extends Component {
                 bottomDivider
                 containerStyle={styles.commentItemContainer}
             >
-                <Avatar source={{ uri: baseUrl + item.avatar }} size="medium" rounded />
+                <Avatar source={localImage} size="medium" rounded />
                 <ListItem.Content>
                     <ListItem.Title style={styles.commentItemTitle}>{item.author}</ListItem.Title>
                     <ListItem.Subtitle style={styles.commentItemSubtitle}>
