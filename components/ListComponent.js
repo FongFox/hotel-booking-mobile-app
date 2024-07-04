@@ -11,7 +11,6 @@ const mapStateToProps = (state) => {
         comments: state.comments
     }
 };
-
 class List extends Component {
     constructor(props) {
         super(props);
@@ -116,15 +115,16 @@ const styles = StyleSheet.create({
         padding: 10,
         textAlign: 'center',
         backgroundColor: 'transparent',
-        marginTop: 20,
+        marginTop: 0,
     },
     listContainer: {
         padding: 10,
-        marginBottom: 45,
+        marginBottom: 0,
+        marginTop: 0,
+        paddingBottom: 80
     },
     listItemContainer: {
         borderRadius: 10,
-        marginVertical: 5,
         marginHorizontal: 5,
         backgroundColor: '#fff',
         shadowColor: '#000',
